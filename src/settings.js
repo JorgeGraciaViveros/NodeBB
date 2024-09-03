@@ -130,29 +130,32 @@ Settings.prototype.persist = function (callback) {
  @returns Object The setting to be used.
  */
 Settings.prototype.get = function (key, def) {
-	let obj = this.cfg._;
-	const parts = (key || '').split('.');
-	let part;
-	for (let i = 0; i < parts.length; i += 1) {
-		part = parts[i];
-		if (part && obj != null) {
-			obj = obj[part];
-		}
-	}
-	if (obj === undefined) {
-		if (def === undefined) {
-			def = this.defCfg;
-			for (let j = 0; j < parts.length; j += 1) {
-				part = parts[j];
-				if (part && def != null) {
-					def = def[part];
-				}
+	const getValueFromObject = (obj, parts) => {
+		let value = obj;
+		for (let i = 0; i < parts.length; i += 1) {
+			const part = parts[i];
+			if (part && value != null) {
+				value = value[part];
+			} else {
+				return undefined;
 			}
 		}
-		return def;
+		return value;
+	};
+
+	const parts = (key || '').split('.');
+	let obj = getValueFromObject(this.cfg._, parts);
+
+	if (obj === undefined && def !== undefined) {
+		obj = getValueFromObject(def, parts);
+	} else if (obj === undefined && def === undefined) {
+		def = this.defCfg;
+		obj = getValueFromObject(def, parts);
 	}
-	return obj;
+
+	return obj !== undefined ? obj : def;
 };
+console.log('Jorge - should be working and displaying');
 
 /**
  Returns the settings-wrapper object.
